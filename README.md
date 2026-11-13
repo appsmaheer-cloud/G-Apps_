@@ -1,18 +1,20 @@
-# GASITE - Google Apps Script (GAS) & Frontend Web App
+# G-Apps_ - GASITE (Google Apps Script & Frontend Web App)
 ## PT. Pratama Nusantara Sakti (PT. PNS)
-**Standar**: SNI ISO 9001:2015, SMK3 PP No. 50/2012, Prinsip 6S  
-**Modul**: Housekeeping (GA-03), WTP (GA-04A), RO (GA-04B), Laundry (GA-06)
+Aplikasi General Affairs & Operasional Site Lapangan  
+**Standar Mutu**: SNI ISO 9001:2015, SMK3 PP No. 50/2012, Prinsip 6S  
+**Modul**: Housekeeping (GA-03), WTP Air Bersih (GA-04A), RO Air Minum (GA-04B), Laundry & Wearpack K3 (GA-06)
 
 ---
 
 ## 1. Ikhtisar Arsitektur
-Aplikasi ini merupakan solusi mobile-first serverless yang menghubungkan form input lapangan secara langsung ke **Google Sheets** sebagai database cloud terpusat menggunakan **Google Apps Script (GAS)** REST API.
+Aplikasi ini merupakan solusi *mobile-first serverless* yang menghubungkan formulir input operasional lapangan secara langsung ke **Google Sheets** sebagai database cloud terpusat menggunakan **Google Apps Script (GAS)** REST API.
 
 ### Fitur Utama:
-- **Zero Server Setup**: Tidak memerlukan hosting server PHP/MySQL; dapat berjalan sepenuhnya di Google Cloud/Google Drive.
+- **Zero Server Setup**: Tidak memerlukan hosting server PHP/MySQL; dapat berjalan sepenuhnya di Google Cloud / Google Drive.
 - **Offline First**: Dilengkapi penyimpanan lokal HP (`localStorage queue`) jika petugas lapangan berada di area *blank spot* sinyal site, dan otomatis tersinkronisasi saat online.
 - **Auto Sheet Generator**: Fungsi `initializeGasSiteSpreadsheet()` secara otomatis membuat tabel dan header kolom di Google Spreadsheet jika belum ada.
 - **Standard Quality Compliance**: Seluruh kolom input sesuai dengan format resmi Formulir Mutu (`FM-HRGA-GA-04B`, `FM-HRGA-GA-06A`, `FM-HRGA-GA-06B`, `FM-HRGA-GA-29`, `FM-HRGA-GA-16`).
+- **Desain Enterprise Dingin Segar Pegunungan**: Datar, tanpa AI-gradient, tanpa badge pastel, segmented summary strip, status dot, dan rasio sentuh 44px mobile.
 
 ---
 
@@ -26,9 +28,9 @@ gas-app/
 ├── Code.js                # Backend Google Apps Script (doGet & doPost API)
 ├── README.md              # Dokumentasi lengkap
 └── frontend/              # Standalone Mobile-first Frontend App
-    ├── index.html         # User Interface Responsive (Tailwind + Lucide)
-    ├── app.js             # Logic, state & offline sync
-    └── styles.css         # Styling mobile
+    ├── index.html         # User Interface Responsive (Lucide + Alpine Design Tokens)
+    ├── app.js             # Logic, state & offline sync queue
+    └── styles.css         # Styling enterprise flat "Dingin Segar Pegunungan"
 ```
 
 ---
@@ -49,31 +51,18 @@ gas-app/
 8. Buka `gas-app/frontend/index.html` di browser Anda, klik menu *"Konfigurasi Google Apps Script URL"*, dan tempelkan Web app URL tersebut.
 
 ### Metode B: Menggunakan Google Clasp CLI
+Jika Anda menginstal Node.js dan `@google/clasp`:
 ```bash
-# 1. Login ke Google Account
-npx @google/clasp login
-
-# 2. Buat proyek script baru
-npx @google/clasp create --title "GASITE_Backend" --type webapp
-
-# 3. Push file lokal ke Google Apps Script
-npx @google/clasp push
+npm install -g @google/clasp
+clasp login
+clasp create --title "GASITE Operational Backend" --type sheets
+clasp push
+clasp deploy --description "GASITE Production API"
 ```
 
 ---
 
-## 4. Alur Kerja Git & Version Control
-Repositori ini telah diinisialisasi dengan Git:
-```bash
-# Cek status repositori
-git status
-
-# Commit perubahan baru
-git add .
-git commit -m "feat: your update message"
-
-# Hubungkan ke remote GitHub perusahaan
-git remote add origin https://github.com/your-company/gasite-mobile.git
-git push -u origin main
-```
-
+## 4. Alur Sinkronisasi Offline & Online
+1. Jika perangkat mendeteksi jaringan terputus (`navigator.onLine === false`), form akan disimpan secara otomatis ke memori lokal browser (`localStorage`).
+2. Indikator di pojok kanan atas akan menampilkan titik kuning bertuliskan **Mode Offline**.
+3. Saat sinyal kembali pulih, aplikasi secara otomatis mendeteksi status online dan mengirimkan seluruh antrean data yang tersimpan ke Google Sheets tanpa kehilangan data (*zero data loss*).
