@@ -1,7 +1,7 @@
 /**
  * GASITE Frontend Client for Google Apps Script Web App
  * PT. Pratama Nusantara Sakti
- * Design System: Dingin Segar Pegunungan (Flat & Clean Enterprise)
+ * Modules: Absensi, Laporan Kerja, Evidence, Spot Check, WTP, RO, Laundry
  */
 
 const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbz_GASITE_DEMO_DEPLOYMENT_ID/exec';
@@ -15,12 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateThemeIcon(savedTheme);
 
     // Set default dates
-    const today = new Date().toISOString().slice(0, 10);
-    const dateIds = ['scDate', 'wtpDate', 'roDate'];
-    dateIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = today;
-    });
+    restoreDefaultDates();
 
     const urlInput = document.getElementById('gasUrlInput');
     if (urlInput) urlInput.value = gasUrl;
@@ -65,8 +60,11 @@ function saveGasUrl() {
 }
 
 function switchTab(tabId) {
-    const tabs = ['spotcheck', 'wtp', 'ro', 'laundry'];
+    const tabs = ['attendance', 'workreport', 'evidence', 'spotcheck', 'wtp', 'ro', 'laundry'];
     const sopMap = {
+        'attendance': 'ABSENSI',
+        'workreport': 'LAP. KERJA',
+        'evidence': 'EVIDENCE',
         'spotcheck': 'PK-GA-03',
         'wtp': 'PK-GA-04A',
         'ro': 'PK-GA-04B',
@@ -75,13 +73,30 @@ function switchTab(tabId) {
 
     tabs.forEach(t => {
         const pane = document.getElementById('tab-' + t);
-        const nav = document.getElementById('nav-' + t);
+        const pillBtn = document.getElementById('btn-tab-' + t);
         if (pane) pane.style.display = (t === tabId) ? 'block' : 'none';
-        if (nav) {
+        if (pillBtn) {
             if (t === tabId) {
-                nav.classList.add('active');
+                pillBtn.style.borderColor = 'var(--accent-fm)';
+                pillBtn.style.color = 'var(--accent-fm)';
+                pillBtn.style.fontWeight = '700';
             } else {
-                nav.classList.remove('active');
+                pillBtn.style.borderColor = 'var(--border-subtle)';
+                pillBtn.style.color = 'var(--text-muted)';
+                pillBtn.style.fontWeight = 'normal';
+            }
+        }
+    });
+
+    // Update bottom nav active indicator
+    const navItems = ['attendance', 'workreport', 'evidence', 'spotcheck'];
+    navItems.forEach(n => {
+        const navEl = document.getElementById('nav-' + n);
+        if (navEl) {
+            if (n === tabId || (n === 'spotcheck' && ['wtp', 'ro', 'laundry'].includes(tabId))) {
+                navEl.classList.add('active');
+            } else {
+                navEl.classList.remove('active');
             }
         }
     });
@@ -167,7 +182,7 @@ async function submitForm(e, actionName) {
 
 function restoreDefaultDates() {
     const today = new Date().toISOString().slice(0, 10);
-    ['scDate', 'wtpDate', 'roDate'].forEach(id => {
+    ['attDate', 'workDate', 'scDate', 'wtpDate', 'roDate'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = today;
     });

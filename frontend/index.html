@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GASITE Mobile - Form Operasional Lapangan</title>
+  <title>GASITE Mobile - Form Operasional, Absensi & Evidence Lapangan</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -11,13 +11,13 @@
 
   <!-- Top Alpine Header -->
   <header class="app-header">
-    <div style="max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
+    <div style="max-width: 650px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <div style="width: 28px; height: 28px; background-color: var(--accent-fm); color: #fff; border-radius: var(--radius-xs); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; letter-spacing: 0.05em;">
           GA
         </div>
         <div>
-          <div style="font-weight: 700; font-size: 13px; line-height: 1.2;">GASITE Mobile</div>
+          <div style="font-weight: 700; font-size: 13px; line-height: 1.2;">GASITE Enterprise Mobile</div>
           <div style="font-size: 10px; color: var(--text-muted);">PT. Pratama Nusantara Sakti <span class="badge-tag tag-sample">contoh</span></div>
         </div>
       </div>
@@ -38,20 +38,45 @@
   </header>
 
   <!-- Segmented Summary Strip (Anti-AI-Slop, Dense Metrics) -->
-  <section style="max-width: 600px; margin: 10px auto 0; padding: 0 12px;">
+  <section style="max-width: 650px; margin: 10px auto 0; padding: 0 12px;">
     <div class="summary-strip">
       <div class="strip-cell">
-        <div class="cell-label">SOP Aktif</div>
-        <div class="cell-value" id="currentSopTag">PK-GA-03</div>
+        <div class="cell-label">Modul Aktif</div>
+        <div class="cell-value" id="currentSopTag">ABSENSI</div>
       </div>
       <div class="strip-cell">
         <div class="cell-label">Antrean Offline</div>
         <div class="cell-value" id="offlineQueueCount">0</div>
       </div>
       <div class="strip-cell">
-        <div class="cell-label">Sinkronisasi</div>
-        <div class="cell-value" style="font-size: 12px; color: var(--status-ok);">Auto (Sheets)</div>
+        <div class="cell-label">Database Cloud</div>
+        <div class="cell-value" style="font-size: 12px; color: var(--status-ok);">Google Sheets</div>
       </div>
+    </div>
+
+    <!-- Quick Switcher Scrollable Pills -->
+    <div style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 8px; -webkit-overflow-scrolling: touch;">
+      <button onclick="switchTab('attendance')" id="btn-tab-attendance" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); border-color: var(--accent-fm); color: var(--accent-fm); font-weight: 700; white-space: nowrap;">
+        Absensi
+      </button>
+      <button onclick="switchTab('workreport')" id="btn-tab-workreport" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); white-space: nowrap;">
+        Laporan Kerja
+      </button>
+      <button onclick="switchTab('evidence')" id="btn-tab-evidence" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); white-space: nowrap;">
+        Bukti Evidence
+      </button>
+      <button onclick="switchTab('spotcheck')" id="btn-tab-spotcheck" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); white-space: nowrap;">
+        Spot Check 6S
+      </button>
+      <button onclick="switchTab('wtp')" id="btn-tab-wtp" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); white-space: nowrap;">
+        Log WTP
+      </button>
+      <button onclick="switchTab('ro')" id="btn-tab-ro" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); white-space: nowrap;">
+        Log RO
+      </button>
+      <button onclick="switchTab('laundry')" id="btn-tab-laundry" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); white-space: nowrap;">
+        Laundry Mess
+      </button>
     </div>
 
     <!-- Endpoint Setting Bar -->
@@ -74,16 +99,244 @@
     <div id="offlineNotice" style="display: none; padding: 8px 12px; margin-bottom: 12px; border: 1px solid var(--status-warn); border-radius: var(--radius-sm); background-color: var(--bg-surface); color: var(--text-main); font-size: 11px;">
       <div style="display: flex; align-items: center; gap: 6px; font-weight: 600;">
         <span class="status-dot warn"></span>
-        <span>Mode Offline: Form akan disimpan secara lokal dan disinkronkan saat sinyal tersedia.</span>
+        <span>Mode Offline: Form akan disimpan secara lokal di memori HP dan otomatis tersinkron saat sinyal pulih.</span>
       </div>
     </div>
   </section>
 
   <!-- Main Content Container -->
-  <main style="max-width: 600px; margin: 0 auto; padding: 0 12px 90px;">
+  <main style="max-width: 650px; margin: 0 auto; padding: 0 12px 90px;">
 
-    <!-- TAB 1: SPOT CHECK HOUSEKEEPING (FM-HRGA-GA-04B) -->
-    <div id="tab-spotcheck" class="tab-pane">
+    <!-- TAB 1: ABSENSI TENAGA KERJA -->
+    <div id="tab-attendance" class="tab-pane">
+      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+          <span class="badge-tag">FM-HRGA-GA-ABS-01</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Presensi Harian Petugas Site</span>
+        </div>
+        <div style="font-weight: 700; font-size: 14px;">Input Presensi & Absensi Lapangan</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Pencatatan kehadiran kerja harian Cleaning Service, Office Boy, Gardener, WTP, RO, dan Laundry.</div>
+      </div>
+
+      <form id="formAttendance" onsubmit="submitForm(event, 'submitAttendance')" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Tanggal Absensi</label>
+            <input type="date" name="attendance_date" id="attDate" required>
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Shift Kerja</label>
+            <select name="shift">
+              <option value="Pagi">Pagi (06:00 - 14:00)</option>
+              <option value="Siang">Siang (14:00 - 22:00)</option>
+              <option value="Malam">Malam (22:00 - 06:00)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Nama Pekerja (Masked)</label>
+            <input type="text" name="worker_name" placeholder="Pekerja-CS-04" required>
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Peran / Jabatan</label>
+            <select name="worker_role">
+              <option value="Cleaning Service">Cleaning Service</option>
+              <option value="Office Boy">Office Boy</option>
+              <option value="Gardener">Gardener (Taman)</option>
+              <option value="Operator WTP">Operator WTP Air Bersih</option>
+              <option value="Operator RO">Operator RO Air Minum</option>
+              <option value="Staff Laundry">Staff Central Laundry</option>
+              <option value="Tenaga Harian Lepas">Tenaga Harian Lepas</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px; background-color: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+          <div>
+            <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Status</label>
+            <select name="status" style="padding: 6px 8px; font-size: 12px;">
+              <option value="Hadir">Hadir</option>
+              <option value="Sakit">Sakit</option>
+              <option value="Izin">Izin</option>
+              <option value="Alpa">Alpa</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Jam Masuk</label>
+            <input type="time" name="check_in_time" value="06:00" required style="padding: 6px 8px; font-size: 12px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Jam Pulang</label>
+            <input type="time" name="check_out_time" value="14:00" style="padding: 6px 8px; font-size: 12px;">
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Area Penugasan Spesifik</label>
+          <input type="text" name="assigned_area" placeholder="Misal: Kantor Utama Lt. 1 & Fasilitas Toilet" required>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Catatan Tambahan</label>
+          <input type="text" name="notes" placeholder="Kondisi kesehatan, kelengkapan rompi APD...">
+        </div>
+
+        <button type="submit" class="btn-submit">
+          Simpan Presensi ke Google Sheets
+        </button>
+      </form>
+    </div>
+
+    <!-- TAB 2: LAPORAN PEKERJAAN HARIAN -->
+    <div id="tab-workreport" class="tab-pane" style="display: none;">
+      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+          <span class="badge-tag">FM-HRGA-GA-ACT-01</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Aktivitas Harian Tenaga Kerja</span>
+        </div>
+        <div style="font-weight: 700; font-size: 14px;">Input Laporan Pekerjaan Harian</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Pencatatan rincian tugas yang dilaksanakan, jam mulai-selesai, dan progress capaian.</div>
+      </div>
+
+      <form id="formWorkReport" onsubmit="submitForm(event, 'submitWorkReport')" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Tanggal Kerja</label>
+            <input type="date" name="report_date" id="workDate" required>
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Shift Kerja</label>
+            <select name="shift">
+              <option value="Pagi">Pagi (06:00 - 14:00)</option>
+              <option value="Siang">Siang (14:00 - 22:00)</option>
+              <option value="Malam">Malam (22:00 - 06:00)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Nama Petugas</label>
+            <input type="text" name="worker_name" placeholder="Pekerja-CS-02" required>
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Peran / Divisi</label>
+            <select name="worker_role">
+              <option value="Cleaning Service">Cleaning Service (6S)</option>
+              <option value="Gardener">Gardener (Taman & Lanskap)</option>
+              <option value="Office Boy">Office Boy (Pantry/Galon)</option>
+              <option value="Operator WTP">Operator WTP Air Bersih</option>
+              <option value="Operator RO">Operator RO Air Minum</option>
+              <option value="Staff Laundry">Staff Central Laundry</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Jenis Tugas</label>
+            <select name="job_type">
+              <option value="Pembersihan 6S Rutin">Pembersihan 6S Rutin</option>
+              <option value="Pemeliharaan Taman & Drainase">Pemeliharaan Taman & Drainase</option>
+              <option value="Backwash Filter Pasir WTP">Backwash Filter Pasir WTP</option>
+              <option value="Penggantian Filter Membran RO">Penggantian Filter Membran RO</option>
+              <option value="Desinfeksi Seragam K3 Oli">Desinfeksi Seragam K3 Oli</option>
+              <option value="Distribusi Galon Unit Kerja">Distribusi Galon Unit Kerja</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Area / Lokasi Kerja</label>
+            <input type="text" name="location_area" placeholder="Misal: Kantor Lapangan Utama Lt. 1" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 10px; background-color: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+          <div>
+            <label style="display: block; font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Mulai</label>
+            <input type="time" name="start_time" value="08:00" required style="padding: 6px 4px; font-size: 11px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Selesai</label>
+            <input type="time" name="end_time" value="11:30" required style="padding: 6px 4px; font-size: 11px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Progress</label>
+            <input type="number" name="progress_percent" value="100" min="0" max="100" style="padding: 6px 4px; font-size: 11px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Status</label>
+            <select name="status" style="padding: 6px 4px; font-size: 11px;">
+              <option value="Selesai">Selesai</option>
+              <option value="Proses">Proses</option>
+              <option value="Tertunda">Tertunda</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Uraian Rinci Pelaksanaan Pekerjaan</label>
+          <textarea name="job_description" rows="2" placeholder="Tindakan pembersihan, perbaikan, atau sanitasi yang dilakukan..." required></textarea>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Temuan Kendala / Kerusakan</label>
+          <input type="text" name="issues_found" placeholder="Kran bocor, lampu putus, rumput tebal...">
+        </div>
+
+        <button type="submit" class="btn-submit">
+          Kirim Laporan Kerja ke Google Sheets
+        </button>
+      </form>
+    </div>
+
+    <!-- TAB 3: BUKTI EVIDENCE (BEFORE & AFTER) -->
+    <div id="tab-evidence" class="tab-pane" style="display: none;">
+      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+          <span class="badge-tag">EVIDENCE-DOK-01</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Dokumentasi Before & After</span>
+        </div>
+        <div style="font-weight: 700; font-size: 14px;">Input Bukti Visual Pekerjaan</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Pembuktian foto kondisi sebelum dan sesudah pelaksanaan tugas untuk audit mutu ISO 9001.</div>
+      </div>
+
+      <form id="formEvidence" onsubmit="submitForm(event, 'submitWorkEvidence')" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Judul Pekerjaan</label>
+          <input type="text" name="title" placeholder="Misal: Pembersihan & Sanitasi Koridor Lantai 1" required>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Lokasi / Titik Penugasan</label>
+          <input type="text" name="location" placeholder="Kantor Utama Lapangan" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; background-color: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+          <div>
+            <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Deskripsi Foto SEBELUM</label>
+            <input type="text" name="photo_before" placeholder="Kondisi kotor / berdebu" style="padding: 6px 8px; font-size: 12px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 10px; font-weight: 700; color: var(--accent-fm); text-transform: uppercase;">Deskripsi Foto SESUDAH</label>
+            <input type="text" name="photo_after" placeholder="Kondisi bersih 6S rapi" style="padding: 6px 8px; font-size: 12px;">
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Catatan Verifikasi</label>
+          <textarea name="notes" rows="2" placeholder="Catatan hasil verifikasi supervisor atau tindakan lanjutan..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          Simpan Evidence ke Google Sheets
+        </button>
+      </form>
+    </div>
+
+    <!-- TAB 4: SPOT CHECK HOUSEKEEPING (FM-HRGA-GA-04B) -->
+    <div id="tab-spotcheck" class="tab-pane" style="display: none;">
       <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
           <span class="badge-tag">FM-HRGA-GA-04B</span>
@@ -154,10 +407,10 @@
       </form>
     </div>
 
-    <!-- TAB 2: WTP WATER TREATMENT (FM-HRGA-GA-06A) -->
+    <!-- TAB 5: WTP WATER TREATMENT (FM-HRGA-GA-06A) -->
     <div id="tab-wtp" class="tab-pane" style="display: none;">
       <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+        <div style="display: flex; align-items: gap: 6px; margin-bottom: 4px;">
           <span class="badge-tag">FM-HRGA-GA-06A</span>
           <span style="font-size: 11px; color: var(--text-muted);">PK-GA-04A WTP Operasional</span>
         </div>
@@ -227,7 +480,7 @@
       </form>
     </div>
 
-    <!-- TAB 3: RO DRINKING WATER (FM-HRGA-GA-06B) -->
+    <!-- TAB 6: RO DRINKING WATER (FM-HRGA-GA-06B) -->
     <div id="tab-ro" class="tab-pane" style="display: none;">
       <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
@@ -291,7 +544,7 @@
       </form>
     </div>
 
-    <!-- TAB 4: LAUNDRY MESS (FM-HRGA-GA-29) -->
+    <!-- TAB 7: LAUNDRY MESS (FM-HRGA-GA-29) -->
     <div id="tab-laundry" class="tab-pane" style="display: none;">
       <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
@@ -349,27 +602,27 @@
 
   <!-- Bottom Navigation Bar for Operatives -->
   <nav class="app-bottom-nav">
-    <div class="bottom-nav-grid">
-      <button onclick="switchTab('spotcheck')" id="nav-spotcheck" class="nav-item active">
+    <div class="bottom-nav-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <button onclick="switchTab('attendance')" id="nav-attendance" class="nav-item active">
+        <i data-lucide="user-check" style="width: 18px; height: 18px; margin-bottom: 2px;"></i>
+        <span>Absensi</span>
+      </button>
+      <button onclick="switchTab('workreport')" id="nav-workreport" class="nav-item">
+        <i data-lucide="clipboard-list" style="width: 18px; height: 18px; margin-bottom: 2px;"></i>
+        <span>Lap. Kerja</span>
+      </button>
+      <button onclick="switchTab('evidence')" id="nav-evidence" class="nav-item">
+        <i data-lucide="camera" style="width: 18px; height: 18px; margin-bottom: 2px;"></i>
+        <span>Evidence</span>
+      </button>
+      <button onclick="switchTab('spotcheck')" id="nav-spotcheck" class="nav-item">
         <i data-lucide="check-square" style="width: 18px; height: 18px; margin-bottom: 2px;"></i>
-        <span>6S HK</span>
-      </button>
-      <button onclick="switchTab('wtp')" id="nav-wtp" class="nav-item">
-        <i data-lucide="droplet" style="width: 18px; height: 18px; margin-bottom: 2px;"></i>
-        <span>WTP</span>
-      </button>
-      <button onclick="switchTab('ro')" id="nav-ro" class="nav-item">
-        <i data-lucide="filter" style="width: 18px; height: 18px; margin-bottom: 2px;"></i>
-        <span>RO Minum</span>
-      </button>
-      <button onclick="switchTab('laundry')" id="nav-laundry" class="nav-item">
-        <i data-lucide="layers" style="width: 18px; height: 18px; margin-bottom: 2px;"></i>
-        <span>Laundry</span>
+        <span>Operasional</span>
       </button>
     </div>
   </nav>
 
-  <!-- Notification Toast (Crisp 1px border) -->
+  <!-- Notification Toast -->
   <div id="toast" class="toast-msg hidden">
     <span class="status-dot" id="toastDot"></span>
     <span id="toastText">Pesan pemberitahuan</span>

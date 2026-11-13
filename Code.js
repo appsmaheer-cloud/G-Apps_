@@ -4,16 +4,20 @@
  * PT. PRATAMA NUSANTARA SAKTI (PT. PNS)
  * 
  * Standards: SNI ISO 9001:2015, SMK3 PP No. 50/2012, Prinsip 6S
- * Modules: Housekeeping (GA-03), WTP (GA-04A), RO (GA-04B), Laundry (GA-06)
+ * Modules: 
+ *   - Housekeeping 6S (GA-03)
+ *   - WTP Air Bersih (GA-04A)
+ *   - RO Air Minum (GA-04B)
+ *   - Laundry & K3 (GA-06)
+ *   - Absensi Tenaga Kerja & Presensi Lapangan
+ *   - Laporan Aktivitas Pekerjaan & Bukti Evidence (Before & After)
  * ============================================================================
  */
 
-// Configuration: Bind to active spreadsheet or create if standalone
 function getDatabase() {
   try {
     return SpreadsheetApp.getActiveSpreadsheet();
   } catch (err) {
-    // If running as standalone script, bind to default property or create
     var props = PropertiesService.getScriptProperties();
     var sheetId = props.getProperty('SPREADSHEET_ID');
     if (sheetId) {
@@ -32,6 +36,19 @@ function initializeGasSiteSpreadsheet() {
   var ss = getDatabase();
   
   var schemas = {
+    'Absensi_Harian': [
+      'Timestamp', 'Tanggal_Absen', 'Nama_Pekerja', 'Peran_Jabatan', 'Shift', 
+      'Jam_Masuk', 'Jam_Pulang', 'Status_Kehadiran', 'Area_Penugasan', 'Catatan'
+    ],
+    'Laporan_Pekerjaan': [
+      'Timestamp', 'Tanggal_Laporan', 'Shift', 'Nama_Petugas', 'Peran', 
+      'Lokasi_Area', 'Jenis_Pekerjaan', 'Jam_Mulai', 'Jam_Selesai', 'Progress_Pct', 
+      'Status', 'Uraian_Pekerjaan', 'Temuan_Kendala'
+    ],
+    'Evidence_Pekerjaan': [
+      'Timestamp', 'Judul_Pekerjaan', 'Lokasi', 'Foto_Sebelum', 'Foto_Sesudah', 
+      'Status_Verifikasi', 'Catatan'
+    ],
     'SpotCheck_GA04B': [
       'Timestamp', 'Tanggal_Periksa', 'Shift', 'Area', 'Pemeriksa', 
       'Kode_Item', 'Item_Diperiksa', 'Status_OK', 'Catatan_Tindakan'
@@ -53,8 +70,6 @@ function initializeGasSiteSpreadsheet() {
     ],
     'Satisfaction_GA16': [
       'Timestamp', 'Tanggal_Survei', 'Nama_Karyawan', 'Departemen', 'Lokasi', 
-      'Peraturan_A', 'Peraturan_B', 'Komunikasi_A', 'Komunikasi_B', 
-      'Kerjasama_A', 'Kerjasama_B', 'Pelayanan_A', 'Pelayanan_B', 
       'Rata_Rata_Skor', 'Masukan_Saran'
     ]
   };
@@ -64,71 +79,143 @@ function initializeGasSiteSpreadsheet() {
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
       sheet.appendRow(schemas[sheetName]);
-      sheet.getRange(1, 1, 1, schemas[sheetName].length).setFontWeight('bold').setBackground('#0f172a').setFontColor('#ffffff');
       sheet.setFrozenRows(1);
+      sheet.getRange(1, 1, 1, schemas[sheetName].length)
+        .setBackground('#0E5E63')
+        .setFontColor('#FFFFFF')
+        .setFontWeight('bold');
     }
   }
 
-  return { status: 'success', message: 'Spreadsheet GASITE berhasil diinisialisasi', spreadsheetUrl: ss.getUrl() };
+  return { status: 'success', message: 'Seluruh sheet operasional GASITE berhasil dibuat!' };
 }
 
 /**
- * Web App Entry Point: Handles GET Requests
+ * Handle GET requests: Return status and operational metrics
  */
 function doGet(e) {
-  var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : 'ping';
-  var ss = getDatabase();
+  try {
+    var ss = getDatabase();
+    var action = e.parameter.action || 'status';
 
-  if (action === 'getDashboardData') {
-    return jsonResponse(getDashboardMetrics(ss));
-  } else if (action === 'getSpotChecks') {
-    return jsonResponse(getSheetRows(ss, 'SpotCheck_GA04B'));
-  } else if (action === 'getWtpLogs') {
-    return jsonResponse(getSheetRows(ss, 'WTP_Log_GA06A'));
-  } else if (action === 'getRoLogs') {
-    return jsonResponse(getSheetRows(ss, 'RO_Log_GA06B'));
-  } else if (action === 'getLaundryOrders') {
-    return jsonResponse(getSheetRows(ss, 'Laundry_Log_GA29'));
-  } else if (action === 'init') {
-    return jsonResponse(initializeGasSiteSpreadsheet());
+    if (action === 'status') {
+      return jsonResponse({
+        status: 'online',
+        system: 'GASITE Mobile Operasional Lapangan PT. PNS',
+        spreadsheetId: ss.getId(),
+        spreadsheetUrl: ss.getUrl(),
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (action === 'getMetrics') {
+      return jsonResponse({
+        status: 'success',
+        metrics: getDashboardMetrics(ss)
+      });
+    }
+
+    return jsonResponse({ status: 'error', message: 'Action tidak dikenal' });
+
+  } catch (error) {
+    return jsonResponse({ status: 'error', message: error.toString() });
   }
-
-  return jsonResponse({
-    status: 'online',
-    app: 'GASITE Google Apps Script Backend',
-    company: 'PT. Pratama Nusantara Sakti',
-    version: '1.0.0',
-    time: new Date().toISOString()
-  });
 }
 
 /**
- * Web App Entry Point: Handles POST Requests
+ * Handle POST requests: Append form inputs to Google Sheets
  */
 function doPost(e) {
   try {
-    var payload = {};
+    var ss = getDatabase();
+    var payload;
+
     if (e.postData && e.postData.contents) {
       payload = JSON.parse(e.postData.contents);
     } else {
-      payload = e.parameter || {};
+      payload = e.parameter;
     }
 
     var action = payload.action;
-    var ss = getDatabase();
-    initializeGasSiteSpreadsheet(); // Ensure tables exist
 
+    // 1. Absensi Tenaga Kerja
+    if (action === 'submitAttendance') {
+      var sheet = ss.getSheetByName('Absensi_Harian');
+      if (!sheet) { initializeGasSiteSpreadsheet(); sheet = ss.getSheetByName('Absensi_Harian'); }
+
+      sheet.appendRow([
+        new Date(),
+        payload.attendance_date || new Date().toISOString().slice(0, 10),
+        payload.worker_name || 'Karyawan-***',
+        payload.worker_role || 'Cleaning Service',
+        payload.shift || 'Pagi',
+        payload.check_in_time || '06:00',
+        payload.check_out_time || '',
+        payload.status || 'Hadir',
+        payload.assigned_area || 'Office Utama',
+        payload.notes || ''
+      ]);
+      return jsonResponse({ status: 'success', message: 'Absensi berhasil tersimpan di Google Sheets' });
+    }
+
+    // 2. Laporan Pekerjaan Harian
+    if (action === 'submitWorkReport') {
+      var sheet = ss.getSheetByName('Laporan_Pekerjaan');
+      if (!sheet) { initializeGasSiteSpreadsheet(); sheet = ss.getSheetByName('Laporan_Pekerjaan'); }
+
+      sheet.appendRow([
+        new Date(),
+        payload.report_date || new Date().toISOString().slice(0, 10),
+        payload.shift || 'Pagi',
+        payload.worker_name || 'Petugas-***',
+        payload.worker_role || 'Cleaning Service',
+        payload.location_area || 'Office Utama',
+        payload.job_type || 'Pembersihan 6S',
+        payload.start_time || '08:00',
+        payload.end_time || '11:30',
+        Number(payload.progress_percent) || 100,
+        payload.status || 'Selesai',
+        payload.job_description || '',
+        payload.issues_found || ''
+      ]);
+      return jsonResponse({ status: 'success', message: 'Laporan pekerjaan tersimpan di Google Sheets' });
+    }
+
+    // 3. Evidence / Bukti Foto Pekerjaan
+    if (action === 'submitWorkEvidence') {
+      var sheet = ss.getSheetByName('Evidence_Pekerjaan');
+      if (!sheet) { initializeGasSiteSpreadsheet(); sheet = ss.getSheetByName('Evidence_Pekerjaan'); }
+
+      sheet.appendRow([
+        new Date(),
+        payload.title || 'Dokumentasi Pekerjaan',
+        payload.location || 'Area Site',
+        payload.photo_before || 'Kondisi Awal Tercatat',
+        payload.photo_after || 'Kondisi Selesai Tercatat',
+        'Terverifikasi',
+        payload.notes || ''
+      ]);
+      return jsonResponse({ status: 'success', message: 'Bukti pekerjaan tersimpan di Google Sheets' });
+    }
+
+    // 4. Spot Check Lapangan (FM-04B)
     if (action === 'submitSpotCheck') {
       var sheet = ss.getSheetByName('SpotCheck_GA04B');
       sheet.appendRow([
-        new Date(), payload.check_date || new Date().toISOString().slice(0, 10),
-        payload.shift || 'Pagi', payload.area || 'Office', payload.inspector || 'Staff GA',
-        payload.item_code || 'SC-' + new Date().getTime(), payload.item_name || '',
-        payload.is_ok ? 'OK' : 'TIDAK OK', payload.notes_action || ''
+        new Date(),
+        payload.check_date || new Date().toISOString().slice(0, 10),
+        payload.shift || 'Pagi',
+        payload.area || 'Office',
+        payload.inspector || 'Petugas GA',
+        payload.item_code || 'SC-' + new Date().getTime().toString().slice(-4),
+        payload.item_name || 'Pemeriksaan Rutin',
+        payload.is_ok == '1' ? 'OK' : 'TIDAK OK',
+        payload.notes_action || ''
       ]);
       return jsonResponse({ status: 'success', message: 'Spot Check berhasil disimpan ke Google Sheets' });
     }
 
+    // 5. WTP Log (FM-06A)
     if (action === 'submitWtpLog') {
       var sheet = ss.getSheetByName('WTP_Log_GA06A');
       var init = Number(payload.initial_stock) || 0;
@@ -137,16 +224,24 @@ function doPost(e) {
       var finalStock = init + prod - dist;
 
       sheet.appendRow([
-        new Date(), payload.op_date || new Date().toISOString().slice(0, 10),
-        payload.shift || 'Pagi', payload.operator_name || 'Operator WTP',
-        payload.supervisor_name || 'Budi Santoso', payload.water_source || 'Sumur Bor',
-        init, prod, payload.op_start || '06:00', payload.op_end || '14:00',
-        dist, finalStock, Number(payload.pac_usage) || 0, Number(payload.chlorine_usage) || 0,
+        new Date(),
+        payload.op_date || new Date().toISOString().slice(0, 10),
+        payload.shift || 'Pagi',
+        payload.operator_name || 'Operator WTP',
+        payload.supervisor_name || 'Budi Santoso',
+        payload.water_source || 'Sumur Bor',
+        init, prod,
+        payload.op_start || '06:00',
+        payload.op_end || '14:00',
+        dist, finalStock,
+        Number(payload.pac_usage) || 0,
+        Number(payload.chlorine_usage) || 0,
         payload.remarks || ''
       ]);
       return jsonResponse({ status: 'success', message: 'Log WTP berhasil disimpan ke Google Sheets' });
     }
 
+    // 6. RO Log (FM-06B)
     if (action === 'submitRoLog') {
       var sheet = ss.getSheetByName('RO_Log_GA06B');
       var init = Number(payload.initial_stock) || 0;
@@ -158,47 +253,42 @@ function doPost(e) {
       var recovery = (perm + rej > 0) ? ((perm / (perm + rej)) * 100).toFixed(1) : 0;
 
       sheet.appendRow([
-        new Date(), payload.op_date || new Date().toISOString().slice(0, 10),
-        payload.shift || 'Pagi', payload.operator_name || 'Operator RO',
-        payload.supervisor_name || 'Budi Santoso', init, prod,
-        payload.op_start || '07:00', payload.op_end || '13:00', dist,
-        finalStock, Number(payload.feed_pressure) || 12.0, perm, rej,
-        recovery + '%', payload.remarks || ''
+        new Date(),
+        payload.op_date || new Date().toISOString().slice(0, 10),
+        payload.shift || 'Pagi',
+        payload.operator_name || 'Operator RO',
+        payload.supervisor_name || 'Budi Santoso',
+        init, prod,
+        payload.op_start || '07:00',
+        payload.op_end || '13:00',
+        dist, finalStock,
+        Number(payload.feed_pressure) || 12.0,
+        perm, rej,
+        recovery + '%',
+        payload.remarks || ''
       ]);
       return jsonResponse({ status: 'success', message: 'Log RO berhasil disimpan ke Google Sheets' });
     }
 
+    // 7. Laundry Order (FM-29)
     if (action === 'submitLaundryOrder') {
       var sheet = ss.getSheetByName('Laundry_Log_GA29');
       var regNo = 'LND-GAS-' + new Date().getTime().toString().slice(-6);
 
       sheet.appendRow([
-        new Date(), regNo, payload.order_date || new Date().toISOString().slice(0, 10),
-        payload.employee_name || '', payload.mess_name || '', payload.department || 'Site',
-        Number(payload.total_pcs) || 1, payload.laundry_type || 'Umum (Reguler)',
-        payload.finish_date || '', payload.operator_name || 'Petugas Laundry',
+        new Date(),
+        regNo,
+        payload.order_date || new Date().toISOString().slice(0, 10),
+        payload.employee_name || '',
+        payload.mess_name || '',
+        payload.department || 'Site',
+        Number(payload.total_pcs) || 1,
+        payload.laundry_type || 'Umum (Reguler)',
+        payload.finish_date || '',
+        payload.operator_name || 'Petugas Laundry',
         payload.status || 'Diterima'
       ]);
       return jsonResponse({ status: 'success', message: 'Order Laundry tercatat: ' + regNo, regNo: regNo });
-    }
-
-    if (action === 'submitSatisfaction') {
-      var sheet = ss.getSheetByName('Satisfaction_GA16');
-      var scores = [
-        Number(payload.rule_a) || 4, Number(payload.rule_b) || 4,
-        Number(payload.comm_a) || 4, Number(payload.comm_b) || 4,
-        Number(payload.team_a) || 4, Number(payload.team_b) || 4,
-        Number(payload.serv_a) || 4, Number(payload.serv_b) || 4
-      ];
-      var avg = (scores.reduce(function(a, b){ return a + b; }, 0) / scores.length).toFixed(2);
-
-      sheet.appendRow([
-        new Date(), payload.survey_date || new Date().toISOString().slice(0, 10),
-        payload.employee_name || 'Anonim', payload.department || 'Site', payload.office_location || 'Main Site',
-        scores[0], scores[1], scores[2], scores[3], scores[4], scores[5], scores[6], scores[7],
-        avg, payload.suggestions || ''
-      ]);
-      return jsonResponse({ status: 'success', message: 'Survei kepuasan FM-16 berhasil dikirim ke Google Sheets', score: avg });
     }
 
     return jsonResponse({ status: 'error', message: 'Action tidak dikenal: ' + action });
@@ -208,9 +298,6 @@ function doPost(e) {
   }
 }
 
-/**
- * Helper: Extract rows as JSON array of objects
- */
 function getSheetRows(ss, sheetName) {
   var sheet = ss.getSheetByName(sheetName);
   if (!sheet) return [];
@@ -226,34 +313,28 @@ function getSheetRows(ss, sheetName) {
     }
     rows.push(obj);
   }
-  return rows.reverse(); // Most recent first
+  return rows.reverse();
 }
 
-/**
- * Helper: Dashboard metrics computation
- */
 function getDashboardMetrics(ss) {
+  var attendance = getSheetRows(ss, 'Absensi_Harian');
+  var workReports = getSheetRows(ss, 'Laporan_Pekerjaan');
   var spotChecks = getSheetRows(ss, 'SpotCheck_GA04B');
   var wtpLogs = getSheetRows(ss, 'WTP_Log_GA06A');
   var roLogs = getSheetRows(ss, 'RO_Log_GA06B');
   var laundry = getSheetRows(ss, 'Laundry_Log_GA29');
 
   return {
+    totalAttendance: attendance.length,
+    totalWorkReports: workReports.length,
     totalSpotChecks: spotChecks.length,
     totalWtpLogs: wtpLogs.length,
     totalRoLogs: roLogs.length,
-    totalLaundryOrders: laundry.length,
-    latestSpotChecks: spotChecks.slice(0, 5),
-    latestWtpLogs: wtpLogs.slice(0, 5),
-    latestRoLogs: roLogs.slice(0, 5)
+    totalLaundryOrders: laundry.length
   };
 }
 
-/**
- * Helper: JSON Response builder for Google Web Apps
- */
 function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
-
