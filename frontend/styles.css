@@ -1,0 +1,28 @@
+/* GASITE Mobile Custom Styles */
+:root {
+    --primary: #10b981;
+    --dark: #0f172a;
+}
+
+body {
+    -webkit-tap-highlight-color: transparent;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 3px;
+}
