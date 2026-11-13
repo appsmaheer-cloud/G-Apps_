@@ -68,6 +68,14 @@ function initializeGasSiteSpreadsheet() {
       'Mess_LH', 'Departemen', 'Total_PCS', 'Jenis_Tekstil', 'Target_Selesai', 
       'Petugas', 'Status_Cucian'
     ],
+    'Work_Orders_CMMS': [
+      'Timestamp', 'No_WO', 'Judul_Pekerjaan', 'Aset_ID', 'Prioritas', 
+      'SLA_Jam', 'Teknisi_PIC', 'Pelapor', 'Status', 'Catatan_Penyelesaian'
+    ],
+    'Inventory_Chemical': [
+      'Timestamp', 'No_Transaksi', 'ID_Item', 'Tipe_Mutasi', 'Kuantitas', 
+      'No_Dokumen_Referensi', 'Petugas', 'Catatan'
+    ],
     'Satisfaction_GA16': [
       'Timestamp', 'Tanggal_Survei', 'Nama_Karyawan', 'Departemen', 'Lokasi', 
       'Rata_Rata_Skor', 'Masukan_Saran'
@@ -289,6 +297,47 @@ function doPost(e) {
         payload.status || 'Diterima'
       ]);
       return jsonResponse({ status: 'success', message: 'Order Laundry tercatat: ' + regNo, regNo: regNo });
+    }
+
+    // 8. Work Order CMMS
+    if (action === 'submitWorkOrder') {
+      var sheet = ss.getSheetByName('Work_Orders_CMMS');
+      if (!sheet) { initializeGasSiteSpreadsheet(); sheet = ss.getSheetByName('Work_Orders_CMMS'); }
+      var woNo = 'WO-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(100 + Math.random() * 900);
+
+      sheet.appendRow([
+        new Date(),
+        woNo,
+        payload.title || '',
+        payload.asset_id || 'Umum',
+        payload.priority || 'P2 - Sedang',
+        Number(payload.sla_hours) || 12,
+        payload.assigned_to || 'Teknisi Standby',
+        payload.reported_by || 'User Lapangan',
+        'Open',
+        ''
+      ]);
+      return jsonResponse({ status: 'success', message: 'Work Order berhasil diterbitkan: ' + woNo, woNo: woNo });
+    }
+
+    // 9. Inventory Chemical Mutation
+    if (action === 'submitInventoryTransaction') {
+      var sheet = ss.getSheetByName('Inventory_Chemical');
+      if (!sheet) { initializeGasSiteSpreadsheet(); sheet = ss.getSheetByName('Inventory_Chemical'); }
+      var transType = payload.trans_type || 'OUT';
+      var trxNo = 'TRX-' + transType + '-' + Math.floor(1000 + Math.random() * 9000);
+
+      sheet.appendRow([
+        new Date(),
+        trxNo,
+        payload.item_code || '',
+        transType,
+        Number(payload.quantity) || 0,
+        payload.reference_doc || 'Pemakaian Shift',
+        payload.operator_name || 'Petugas Gudang',
+        payload.notes || ''
+      ]);
+      return jsonResponse({ status: 'success', message: 'Mutasi chemical berhasil dicatat: ' + trxNo, trxNo: trxNo });
     }
 
     return jsonResponse({ status: 'error', message: 'Action tidak dikenal: ' + action });
