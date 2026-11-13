@@ -1,6 +1,7 @@
 /**
  * GASITE Frontend Client for Google Apps Script Web App
  * PT. Pratama Nusantara Sakti
+ * Design System: Dingin Segar Pegunungan (Flat & Clean Enterprise)
  */
 
 const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbz_GASITE_DEMO_DEPLOYMENT_ID/exec';
@@ -8,6 +9,11 @@ const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbz_GASITE_DEMO_
 let gasUrl = localStorage.getItem('GASITE_ENDPOINT') || DEFAULT_GAS_URL;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Theme
+    const savedTheme = localStorage.getItem('GASITE_THEME') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+
     // Set default dates
     const today = new Date().toISOString().slice(0, 10);
     const dateIds = ['scDate', 'wtpDate', 'roDate'];
@@ -19,14 +25,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlInput = document.getElementById('gasUrlInput');
     if (urlInput) urlInput.value = gasUrl;
 
+    updateQueueCount();
     checkOnlineStatus();
     window.addEventListener('online', checkOnlineStatus);
     window.addEventListener('offline', checkOnlineStatus);
 });
 
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('GASITE_THEME', next);
+    updateThemeIcon(next);
+}
+
+function updateThemeIcon(theme) {
+    const icon = document.getElementById('themeIcon');
+    if (icon) {
+        icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
 function toggleEndpointSettings() {
     const box = document.getElementById('settingsBox');
-    if (box) box.classList.toggle('hidden');
+    if (box) {
+        box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+    }
 }
 
 function saveGasUrl() {
@@ -34,54 +59,75 @@ function saveGasUrl() {
     if (input && input.value) {
         gasUrl = input.value.trim();
         localStorage.setItem('GASITE_ENDPOINT', gasUrl);
-        showToast('✓ URL Google Apps Script tersimpan', 'success');
+        showToast('URL Google Apps Script berhasil disimpan', 'success');
         toggleEndpointSettings();
     }
 }
 
 function switchTab(tabId) {
-    document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('text-amber-400', 'text-blue-400', 'text-cyan-400', 'text-purple-400');
-        btn.classList.add('text-slate-400');
+    const tabs = ['spotcheck', 'wtp', 'ro', 'laundry'];
+    const sopMap = {
+        'spotcheck': 'PK-GA-03',
+        'wtp': 'PK-GA-04A',
+        'ro': 'PK-GA-04B',
+        'laundry': 'PK-GA-06'
+    };
+
+    tabs.forEach(t => {
+        const pane = document.getElementById('tab-' + t);
+        const nav = document.getElementById('nav-' + t);
+        if (pane) pane.style.display = (t === tabId) ? 'block' : 'none';
+        if (nav) {
+            if (t === tabId) {
+                nav.classList.add('active');
+            } else {
+                nav.classList.remove('active');
+            }
+        }
     });
 
-    const target = document.getElementById('tab-' + tabId);
-    if (target) target.classList.remove('hidden');
+    const sopTag = document.getElementById('currentSopTag');
+    if (sopTag && sopMap[tabId]) {
+        sopTag.textContent = sopMap[tabId];
+    }
+}
 
-    const navBtn = document.getElementById('nav-' + tabId);
-    if (navBtn) {
-        navBtn.classList.remove('text-slate-400');
-        if (tabId === 'spotcheck') navBtn.classList.add('text-amber-400');
-        if (tabId === 'wtp') navBtn.classList.add('text-blue-400');
-        if (tabId === 'ro') navBtn.classList.add('text-cyan-400');
-        if (tabId === 'laundry') navBtn.classList.add('text-purple-400');
+function updateQueueCount() {
+    const queue = JSON.parse(localStorage.getItem('GASITE_OFFLINE_QUEUE') || '[]');
+    const countEl = document.getElementById('offlineQueueCount');
+    if (countEl) {
+        countEl.textContent = queue.length;
     }
 }
 
 function checkOnlineStatus() {
     const isOnline = navigator.onLine;
-    const badge = document.getElementById('connectionStatus');
+    const dot = document.getElementById('statusDot');
     const text = document.getElementById('statusText');
     const notice = document.getElementById('offlineNotice');
 
     if (isOnline) {
-        badge.className = 'flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
-        text.textContent = 'Online / Sheets Connected';
-        if (notice) notice.classList.add('hidden');
+        if (dot) {
+            dot.className = 'status-dot';
+        }
+        if (text) text.textContent = 'Sheets Terhubung';
+        if (notice) notice.style.display = 'none';
         syncOfflineQueue();
     } else {
-        badge.className = 'flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30';
-        text.textContent = 'Mode Offline (Lokal)';
-        if (notice) notice.classList.remove('hidden');
+        if (dot) {
+            dot.className = 'status-dot warn';
+        }
+        if (text) text.textContent = 'Mode Offline';
+        if (notice) notice.style.display = 'block';
     }
+    updateQueueCount();
 }
 
 async function submitForm(e, actionName) {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
-    const data = { action: actionName };
+    const data = { action: actionName, timestamp: new Date().toISOString() };
 
     formData.forEach((val, key) => {
         data[key] = val;
@@ -90,54 +136,56 @@ async function submitForm(e, actionName) {
     // If offline, save in queue
     if (!navigator.onLine) {
         saveOffline(data);
-        showToast('📦 Disimpan ke Antrean Offline (akan otomatis sinkron saat sinyal pulih)', 'warning');
+        showToast('Tersimpan di antrean offline lokal HP', 'warn');
         form.reset();
+        restoreDefaultDates();
         return;
     }
 
-    showToast('Sedang mengirim ke Google Sheets...', 'info');
+    showToast('Mengirim data ke Google Sheets PT. PNS...', 'info');
 
     try {
-        const response = await fetch(gasUrl, {
+        await fetch(gasUrl, {
             method: 'POST',
-            mode: 'no-cors', // Google Apps Script redirects require no-cors or simple payload
+            mode: 'no-cors',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         });
 
-        // Note: Google Apps Script Web App in no-cors returns opaque response
-        showToast('✓ Berhasil dikirim ke Google Sheets PT. PNS', 'success');
+        showToast('Berhasil dikirim ke Google Sheets', 'success');
         form.reset();
-
-        // Restore default dates
-        const today = new Date().toISOString().slice(0, 10);
-        ['scDate', 'wtpDate', 'roDate'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = today;
-        });
+        restoreDefaultDates();
 
     } catch (err) {
-        console.warn('Network error or CORS, queuing offline:', err);
+        console.warn('Network error, saving offline:', err);
         saveOffline(data);
-        showToast('Tersimpan di Penyimpanan Lokal HP (Cek Koneksi Sheets)', 'warning');
+        showToast('Jaringan lambat, data disimpan di memori lokal HP', 'warn');
     }
+}
+
+function restoreDefaultDates() {
+    const today = new Date().toISOString().slice(0, 10);
+    ['scDate', 'wtpDate', 'roDate'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = today;
+    });
 }
 
 function saveOffline(data) {
     const queue = JSON.parse(localStorage.getItem('GASITE_OFFLINE_QUEUE') || '[]');
     queue.push({ timestamp: new Date().toISOString(), payload: data });
     localStorage.setItem('GASITE_OFFLINE_QUEUE', JSON.stringify(queue));
+    updateQueueCount();
 }
 
 function syncOfflineQueue() {
     const queue = JSON.parse(localStorage.getItem('GASITE_OFFLINE_QUEUE') || '[]');
     if (queue.length === 0) return;
 
-    showToast(`Mensinkronkan ${queue.length} data tersimpan ke Google Sheets...`, 'info');
+    showToast(`Mensinkronkan ${queue.length} rekaman offline...`, 'info');
     
-    // Attempt sending queued items
     Promise.all(queue.map(item => {
         return fetch(gasUrl, {
             method: 'POST',
@@ -147,20 +195,21 @@ function syncOfflineQueue() {
         }).catch(err => console.error('Failed to sync item:', err));
     })).then(() => {
         localStorage.removeItem('GASITE_OFFLINE_QUEUE');
-        showToast('✓ Seluruh data offline berhasil disinkronkan!', 'success');
+        updateQueueCount();
+        showToast('Seluruh rekaman offline berhasil terkirim ke Sheets', 'success');
     });
 }
 
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
-    if (!toast) return;
+    const toastDot = document.getElementById('toastDot');
+    const toastText = document.getElementById('toastText');
+    if (!toast || !toastText) return;
 
-    toast.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-xs font-bold shadow-2xl transition duration-300 ' +
-        (type === 'success' ? 'bg-emerald-600 text-white' :
-        (type === 'warning' ? 'bg-amber-600 text-white' :
-        (type === 'info' ? 'bg-blue-600 text-white' : 'bg-rose-600 text-white')));
-
-    toast.textContent = message;
+    if (toastDot) {
+        toastDot.className = 'status-dot' + (type === 'warn' ? ' warn' : (type === 'danger' ? ' danger' : ''));
+    }
+    toastText.textContent = message;
     toast.classList.remove('hidden');
 
     setTimeout(() => {

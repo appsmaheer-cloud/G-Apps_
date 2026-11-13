@@ -1,28 +1,298 @@
-/* GASITE Mobile Custom Styles */
+/* ==========================================================================
+   GASITE MOBILE - DESIGN SYSTEM "DINGIN SEGAR PEGUNUNGAN"
+   PT. PRATAMA NUSANTARA SAKTI - FIELD OPERATIONS SYNC (GOOGLE APPS SCRIPT)
+   Adheres to Agent/enterprise-prototype-ui-id and privacy-pii-id
+   ========================================================================== */
+
 :root {
-    --primary: #10b981;
-    --dark: #0f172a;
+  /* Alpine Light Mode (Dingin Segar Pegunungan) */
+  --bg-canvas: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-subtle: #e2e8f0;
+  --bg-active: #cbd5e1;
+  --border-subtle: #cbd5e1;
+  --border-strong: #94a3b8;
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-inverted: #ffffff;
+
+  /* Module Accents (Datar, Presisi, Tanpa AI Gradients) */
+  --accent-fm: #0E5E63;       /* Pine Teal */
+  --accent-water: #1E3A8A;    /* Glacier Navy */
+  --accent-ro: #0284c7;       /* Pure Spring Blue */
+  --accent-laundry: #475569;  /* Mountain Slate */
+
+  /* Status Tokens */
+  --status-ok: #059669;
+  --status-warn: #d97706;
+  --status-danger: #dc2626;
+
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --font-base: 13px;
+}
+
+[data-theme="dark"] {
+  /* Alpine Dark Mode (Malam Puncak Pegunungan) */
+  --bg-canvas: #090e17;
+  --bg-surface: #0f172a;
+  --bg-subtle: #1e293b;
+  --bg-active: #334155;
+  --border-subtle: #1e293b;
+  --border-strong: #334155;
+
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-inverted: #0f172a;
+
+  --accent-fm: #14b8a6;
+  --accent-water: #38bdf8;
+  --accent-ro: #38bdf8;
+  --accent-laundry: #94a3b8;
+
+  --status-ok: #34d399;
+  --status-warn: #fbbf24;
+  --status-danger: #f87171;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-    -webkit-tap-highlight-color: transparent;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--font-base);
+  line-height: 1.45;
+  background-color: var(--bg-canvas);
+  color: var(--text-main);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Form Controls - Touch Target 44px on mobile */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-main);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  width: 100%;
+  min-height: 40px;
+  outline: none;
+  transition: border-color 0.15s ease-in-out;
 }
 
 input:focus, select:focus, textarea:focus {
-    outline: none !important;
-    border-color: #10b981 !important;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+  border-color: var(--accent-fm);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* Radio buttons container */
+.radio-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
-::-webkit-scrollbar-track {
-    background: #1e293b;
+
+.radio-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 44px;
 }
-::-webkit-scrollbar-thumb {
-    background: #334155;
-    border-radius: 3px;
+
+.radio-tile input[type="radio"] {
+  width: auto;
+  min-height: auto;
+  margin: 0;
+}
+
+/* Segmented Summary Strip (Anti-AI-Slop, Flat & Bordered) */
+.summary-strip {
+  display: flex;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.summary-strip .strip-cell {
+  flex: 1;
+  padding: 8px 12px;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.summary-strip .strip-cell:last-child {
+  border-right: none;
+}
+
+.strip-cell .cell-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.strip-cell .cell-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 2px;
+}
+
+/* Status Indicator Dot */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--status-ok);
+  display: inline-block;
+}
+
+.status-dot.warn { background-color: var(--status-warn); }
+.status-dot.danger { background-color: var(--status-danger); }
+
+/* Buttons: Flat, Crisp, 44px touch target */
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 16px;
+  background-color: var(--accent-fm);
+  color: #ffffff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-submit:active {
+  opacity: 0.85;
+}
+
+.btn-submit.btn-water { background-color: var(--accent-water); }
+.btn-submit.btn-ro { background-color: var(--accent-ro); }
+.btn-submit.btn-laundry { background-color: var(--accent-laundry); }
+
+/* Top Navbar & Bottom Navbar */
+.app-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 10px 14px;
+}
+
+.app-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  z-index: 50;
+  padding: 4px 6px;
+}
+
+.bottom-nav-grid {
+  max-width: 600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 2px;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  min-height: 44px;
+}
+
+.nav-item.active {
+  color: var(--accent-fm);
+  background-color: var(--bg-subtle);
+  border-bottom: 2px solid var(--accent-fm);
+}
+
+.badge-tag {
+  display: inline-block;
+  padding: 2px 5px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.tag-sample {
+  border-color: var(--border-strong);
+  color: var(--text-muted);
+  font-weight: normal;
+  font-size: 9px;
+  text-transform: lowercase;
+}
+
+/* Toast Notification (Flat 1px border) */
+.toast-msg {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  padding: 10px 16px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 90vw;
+}
+
+.toast-msg.hidden {
+  display: none;
 }
