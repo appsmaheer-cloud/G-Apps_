@@ -62,8 +62,9 @@ function saveGasUrl() {
 }
 
 function switchTab(tabId) {
-    const tabs = ['attendance', 'workreport', 'evidence', 'spotcheck', 'wtp', 'ro', 'laundry'];
+    const tabs = ['dashreport', 'attendance', 'workreport', 'evidence', 'spotcheck', 'wtp', 'ro', 'laundry'];
     const sopMap = {
+        'dashreport': 'LAPORAN',
         'attendance': 'ABSENSI',
         'workreport': 'LAP. KERJA',
         'evidence': 'EVIDENCE',
@@ -382,4 +383,35 @@ function calcHaversine(lat1, lon1, lat2, lon2) {
               Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return Math.round(R * c * 10) / 10;
+}
+
+function toggleMobileRptView(mode) {
+    const cardView = document.getElementById('mobileRptCards');
+    const tableView = document.getElementById('mobileRptTable');
+    const btnCard = document.getElementById('btnMobileCard');
+    const btnTable = document.getElementById('btnMobileTable');
+
+    if (mode === 'card') {
+        if (cardView) cardView.style.display = 'flex';
+        if (tableView) tableView.style.display = 'none';
+        if (btnCard) {
+            btnCard.style.background = 'var(--bg-surface)';
+            btnCard.style.color = 'var(--accent-fm)';
+        }
+        if (btnTable) {
+            btnTable.style.background = 'transparent';
+            btnTable.style.color = 'var(--text-muted)';
+        }
+    } else {
+        if (cardView) cardView.style.display = 'none';
+        if (tableView) tableView.style.display = 'block';
+        if (btnTable) {
+            btnTable.style.background = 'var(--bg-surface)';
+            btnTable.style.color = 'var(--accent-fm)';
+        }
+        if (btnCard) {
+            btnCard.style.background = 'transparent';
+            btnCard.style.color = 'var(--text-muted)';
+        }
+    }
 }

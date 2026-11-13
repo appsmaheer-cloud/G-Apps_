@@ -23,6 +23,12 @@
       </div>
 
       <div style="display: flex; align-items: center; gap: 8px;">
+        <!-- Web ERP Launcher Link -->
+        <a href="http://127.0.0.1:8000" target="_blank" style="padding: 4px 8px; border: 1px solid var(--border-subtle); border-radius: var(--radius-xs); background-color: var(--bg-surface); text-decoration: none; color: var(--accent-fm); font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" title="Buka Web App Enterprise ERP">
+          <i data-lucide="monitor" style="width: 12px; height: 12px;"></i>
+          <span>Web ERP</span>
+        </a>
+
         <!-- Online / Sheets Status -->
         <div id="connectionStatus" class="status-indicator" style="padding: 4px 8px; border: 1px solid var(--border-subtle); border-radius: var(--radius-xs); background-color: var(--bg-surface);">
           <span class="status-dot" id="statusDot"></span>
@@ -56,6 +62,9 @@
 
     <!-- Quick Switcher Scrollable Pills -->
     <div style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 8px; -webkit-overflow-scrolling: touch;">
+      <button onclick="switchTab('dashreport')" id="btn-tab-dashreport" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); white-space: nowrap;">
+        📊 Dashboard Laporan
+      </button>
       <button onclick="switchTab('attendance')" id="btn-tab-attendance" class="badge-tag" style="padding: 6px 10px; cursor: pointer; background-color: var(--bg-surface); border-color: var(--accent-fm); color: var(--accent-fm); font-weight: 700; white-space: nowrap;">
         Absensi
       </button>
@@ -661,6 +670,121 @@
           Simpan Penerimaan Laundry
         </button>
       </form>
+    </div>
+
+    <!-- TAB 8: DASHBOARD LAPORAN (CARD & TABLE VIEW) -->
+    <div id="tab-dashreport" class="tab-pane" style="display: none;">
+      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span class="badge-tag">RPT-MOBILE-01</span>
+              <span style="font-size: 11px; color: var(--text-muted);">Hasil Laporan Site PT. PNS</span>
+            </div>
+            <div style="font-weight: 700; font-size: 14px;">Dashboard Hasil Laporan Pekerjaan</div>
+          </div>
+
+          <!-- View Switcher (Card vs Table) -->
+          <div style="display: flex; gap: 2px; background: var(--bg-subtle); padding: 2px; border-radius: 4px; border: 1px solid var(--border-subtle);">
+            <button type="button" onclick="toggleMobileRptView('card')" id="btnMobileCard" style="padding: 4px 8px; border: none; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer; background: var(--bg-surface); color: var(--accent-fm);">
+              Card
+            </button>
+            <button type="button" onclick="toggleMobileRptView('table')" id="btnMobileTable" style="padding: 4px 8px; border: none; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-muted);">
+              Tabel
+            </button>
+          </div>
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-muted);">Ringkasan capaian tugas harian, status selesai, kendala, dan presensi Face ID.</div>
+      </div>
+
+      <!-- Card View of Reports -->
+      <div id="mobileRptCards" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Card 1 -->
+        <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span class="badge-tag">Cleaning Service</span>
+            <span class="status-indicator" style="font-size: 11px; color: #059669; font-weight: 700;">● Selesai 100%</span>
+          </div>
+          <div style="font-weight: 700; font-size: 13px;">Pembersihan 6S Kantor Utama Lt. 1 & 2</div>
+          <div style="font-size: 11px; color: var(--accent-fm); margin-top: 2px;">Office Utama & Ruang Rapat</div>
+          <div style="font-size: 11px; color: var(--text-muted); background: var(--bg-subtle); padding: 6px; border-radius: 4px; margin: 6px 0;">
+            Menyapu, mengepel seluruh koridor, sanitasi toilet, dan perapian meja kerja sesuai standar 6S.
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 6px;">
+            <span>Petugas: Pekerja-CS-01</span>
+            <span style="font-family: monospace;">07:00 - 11:30 WIB</span>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span class="badge-tag">Gardener</span>
+            <span class="status-indicator" style="font-size: 11px; color: #059669; font-weight: 700;">● Selesai 100%</span>
+          </div>
+          <div style="font-weight: 700; font-size: 13px;">Pemotongan Rumput & Drainase Mess Blok C</div>
+          <div style="font-size: 11px; color: var(--accent-fm); margin-top: 2px;">Area Taman & Mess Karyawan</div>
+          <div style="font-size: 11px; color: var(--text-muted); background: var(--bg-subtle); padding: 6px; border-radius: 4px; margin: 6px 0;">
+            Pemotongan rumput liar sepanjang 200m drainase dan perapian dahan peneduh.
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 6px;">
+            <span>Petugas: Pekerja-GD-03</span>
+            <span style="font-family: monospace;">07:30 - 12:00 WIB</span>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span class="badge-tag">Operator WTP</span>
+            <span class="status-indicator" style="font-size: 11px; color: #d97706; font-weight: 700;">● Dalam Proses</span>
+          </div>
+          <div style="font-weight: 700; font-size: 13px;">Backwash Sand Filter & Dosing Koagulan</div>
+          <div style="font-size: 11px; color: var(--accent-fm); margin-top: 2px;">Plant Water Treatment (WTP)</div>
+          <div style="font-size: 11px; color: var(--text-muted); background: var(--bg-subtle); padding: 6px; border-radius: 4px; margin: 6px 0;">
+            Pencucian berkala pasir silika tangki 01 dan pengisian larutan PAC dosis 15.5 Kg.
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 6px;">
+            <span>Petugas: Dedi Kurniawan</span>
+            <span style="font-family: monospace;">08:00 - 13:30 WIB</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table View of Reports -->
+      <div id="mobileRptTable" style="display: none; background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+          <thead>
+            <tr style="background: var(--bg-subtle); border-bottom: 1px solid var(--border-subtle); text-align: left;">
+              <th style="padding: 8px 10px;">Petugas</th>
+              <th style="padding: 8px 10px;">Tugas</th>
+              <th style="padding: 8px 10px;">Progress</th>
+              <th style="padding: 8px 10px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 8px 10px; font-weight: 700;">Pekerja-CS-01</td>
+              <td style="padding: 8px 10px;">Pembersihan 6S Kantor</td>
+              <td style="padding: 8px 10px; font-family: monospace; color: #059669;">100%</td>
+              <td style="padding: 8px 10px; color: #059669; font-weight: 700;">Selesai</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 8px 10px; font-weight: 700;">Pekerja-GD-03</td>
+              <td style="padding: 8px 10px;">Rumput Drainase Mess</td>
+              <td style="padding: 8px 10px; font-family: monospace; color: #059669;">100%</td>
+              <td style="padding: 8px 10px; color: #059669; font-weight: 700;">Selesai</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 10px; font-weight: 700;">Dedi Kurniawan</td>
+              <td style="padding: 8px 10px;">Backwash Sand Filter</td>
+              <td style="padding: 8px 10px; font-family: monospace; color: #d97706;">75%</td>
+              <td style="padding: 8px 10px; color: #d97706; font-weight: 700;">Proses</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
   </main>
