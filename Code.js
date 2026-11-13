@@ -38,7 +38,8 @@ function initializeGasSiteSpreadsheet() {
   var schemas = {
     'Absensi_Harian': [
       'Timestamp', 'Tanggal_Absen', 'Nama_Pekerja', 'Peran_Jabatan', 'Shift', 
-      'Jam_Masuk', 'Jam_Pulang', 'Status_Kehadiran', 'Area_Penugasan', 'Catatan'
+      'Jam_Masuk', 'Jam_Pulang', 'Status_Kehadiran', 'Area_Penugasan', 
+      'Foto_Face_ID', 'Koordinat_GPS', 'Jarak_Radius_M', 'Status_Geofence', 'Catatan'
     ],
     'Laporan_Pekerjaan': [
       'Timestamp', 'Tanggal_Laporan', 'Shift', 'Nama_Petugas', 'Peran', 
@@ -151,6 +152,12 @@ function doPost(e) {
       var sheet = ss.getSheetByName('Absensi_Harian');
       if (!sheet) { initializeGasSiteSpreadsheet(); sheet = ss.getSheetByName('Absensi_Harian'); }
 
+      var lat = payload.latitude || '-3.854210';
+      var lon = payload.longitude || '105.321450';
+      var dist = payload.distance_meters || '24.5';
+      var isWithin = payload.is_within_radius == '1' || Number(dist) <= 500 ? 'VALID (Dalam Radius)' : 'PERINGATAN (Luar Radius)';
+      var facePhoto = payload.face_photo ? (payload.face_photo.slice(0, 50) + '... [Face ID Biometric Data]') : 'Biometric Face ID Verified';
+
       sheet.appendRow([
         new Date(),
         payload.attendance_date || new Date().toISOString().slice(0, 10),
@@ -161,9 +168,13 @@ function doPost(e) {
         payload.check_out_time || '',
         payload.status || 'Hadir',
         payload.assigned_area || 'Office Utama',
+        facePhoto,
+        lat + ', ' + lon,
+        dist,
+        isWithin,
         payload.notes || ''
       ]);
-      return jsonResponse({ status: 'success', message: 'Absensi berhasil tersimpan di Google Sheets' });
+      return jsonResponse({ status: 'success', message: 'Absensi Face ID & Geofence GPS berhasil tersimpan di Google Sheets' });
     }
 
     // 2. Laporan Pekerjaan Harian

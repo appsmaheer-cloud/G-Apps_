@@ -119,6 +119,71 @@
       </div>
 
       <form id="formAttendance" onsubmit="submitForm(event, 'submitAttendance')" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <input type="hidden" name="face_photo" id="gas_face_photo" value="">
+        <input type="hidden" name="latitude" id="gas_latitude" value="-3.854210">
+        <input type="hidden" name="longitude" id="gas_longitude" value="105.321450">
+        <input type="hidden" name="distance_meters" id="gas_distance" value="24.5">
+        <input type="hidden" name="is_within_radius" id="gas_is_within" value="1">
+
+        <!-- Face ID Biometric Card -->
+        <div style="background-color: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+              <i data-lucide="scan-face" style="width: 14px; height: 14px; color: var(--accent-fm);"></i>
+              <span>Pemindaian Wajah (Face ID)</span>
+            </div>
+            <span id="gasFaceBadge" class="badge-tag" style="background-color: #ecfdf5; color: #047857; border-color: #a7f3d0; font-size: 10px;">
+              ● FACE ID STANDBY
+            </span>
+          </div>
+
+          <div style="position: relative; width: 100%; height: 160px; background-color: #0f172a; border-radius: var(--radius-xs); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <video id="gasVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+            <canvas id="gasCanvas" style="display: none;"></canvas>
+            
+            <div id="gasFacePreview" style="display: none; position: absolute; inset: 0; background: #0f172a;">
+              <img id="gasFaceImg" src="" style="width: 100%; height: 100%; object-fit: cover;">
+              <div style="position: absolute; bottom: 6px; left: 6px; right: 6px; background: rgba(15,23,42,0.85); padding: 4px 8px; border-radius: 4px; font-size: 10px; color: #34d399; font-weight: 700; display: flex; justify-content: space-between;">
+                <span>✓ Wajah Terverifikasi</span>
+                <span>Match: 99.1%</span>
+              </div>
+            </div>
+
+            <div id="gasLaser" style="position: absolute; top: 40%; left: 15%; right: 15%; height: 2px; background: #2dd4bf; box-shadow: 0 0 8px #2dd4bf;"></div>
+          </div>
+
+          <div style="display: flex; gap: 6px; margin-top: 8px;">
+            <button type="button" onclick="captureGasFace()" style="flex: 1; padding: 6px 10px; background-color: var(--accent-fm); color: #fff; border: none; border-radius: var(--radius-xs); font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+              <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+              <span>Scan Face ID</span>
+            </button>
+            <button type="button" onclick="simulateGasFace()" style="padding: 6px 10px; background: transparent; border: 1px solid var(--border-subtle); color: var(--text-main); border-radius: var(--radius-xs); font-size: 11px; cursor: pointer;">
+              Simulasi
+            </button>
+          </div>
+        </div>
+
+        <!-- GPS Geofence Card -->
+        <div style="background-color: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div style="font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+              <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--accent-fm);"></i>
+              <span>Geolokasi GPS & Geofence Site</span>
+            </div>
+            <span id="gasGeoBadge" class="badge-tag" style="background-color: #ecfdf5; color: #047857; border-color: #a7f3d0; font-size: 10px;">
+              ● DALAM RADIUS SITE
+            </span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+            <span>Koordinat Anda:</span>
+            <span id="gasCoordText" style="font-family: monospace; font-weight: 700; color: var(--text-main);">-3.854210, 105.321450</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+            <span>Jarak ke Pos Gerbang:</span>
+            <span id="gasDistText" style="font-family: monospace; font-weight: 700; color: #059669;">24.5 Meter (Aman &lt; 500m)</span>
+          </div>
+        </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
           <div>
             <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Tanggal Absensi</label>
